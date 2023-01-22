@@ -1,0 +1,38 @@
+<!-- <pre class="line-numbers" data-line="5-10, 15-20"><code class="language-ruby"><%#= Deforest.prepare_for_render(@source_code) %></code></pre> -->
+<code>
+  <%= Deforest.prepare_file_for_render(@full_path).html_safe %>
+</code>
+
+<script type="text/javascript">
+  Prism.hooks.add('line-numbers', function(env) {
+    debugger;
+    if (env.token == "entity") {
+      env.attributes[""]
+    }
+  });
+</script>
+
+<style>
+  .method_call_count {
+    padding: 2px 10px;
+    background: rgba(242, 39, 39, 0.7);
+    border: 1px solid red;
+    border-radius: 55px;
+    color: #fff;
+  }
+  .highlight-line {
+    color: #fff;
+    padding: 2px;
+  }
+  .highlight-red {
+    background: rgba(245, 66, 72, 0.8);
+  }
+  .highlight-yellow {
+    background: rgba(240, 240, 5, 0.8);
+    color: #000;
+  }
+  .highlight-green {
+    background: rgba(0, 227, 38, 0.8);
+    color: #000;
+  }
+</style>

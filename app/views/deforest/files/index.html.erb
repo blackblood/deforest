@@ -1,0 +1,8 @@
+<% @dirs.each do |d| %>
+  <span><%= link_to d, "#" %></span>
+  <br/>
+<% end %>
+<% @files.each do |f| %>
+  <span><%= link_to f, file_path(f) %></span>
+  <br/>
+<% end %>

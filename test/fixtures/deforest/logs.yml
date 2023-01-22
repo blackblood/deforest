@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  file_name: MyString
+  line_no: 1
+  method_name: MyString
+  count: 1
+
+two:
+  file_name: MyString
+  line_no: 1
+  method_name: MyString
+  count: 1
