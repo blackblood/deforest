@@ -110,8 +110,14 @@ module Deforest
         "<span class='highlight-line #{current_highlight_color}'>" + line + "</span>&nbsp;&nbsp;<span class='method_call_count'>#{line_no_count[idx]}</span>"
       else
         if stack.present?
-          if line =~ /(&nbsp;|\s|\A)(def|if|while|case|for|class|module|do)\s/
-            stack << 1
+          bracket_open_regex = Regexp.new(/(&nbsp;|\s|\A)(def|if|unless|while|until|case|for|class|module|do)\s/)
+          if (matched = line.match(bracket_open_regex)).present?
+            keyword = matched.captures.join("").strip
+            if %w[if unless while until].include?(keyword)
+              stack << 1 if line =~ /(&nbsp;)+(#{keyword})\w*/
+            else
+              stack << 1
+            end
           end
           if line =~ /(&nbsp;|\s|\A)(end)(?!\w)/
             stack.pop
@@ -131,7 +137,7 @@ module Deforest
         leading_nbsp = (0...first_letter_idx).map { "&nbsp;" }.join("")
         prepared_line = leading_nbsp.present? ? leading_nbsp + line.lstrip : line.strip
         result_line = if block_given?
-          yield prepared_line, index
+          yield prepared_line + "\n", index
         else
           "<span>#{prepared_line}</span>"
         end
