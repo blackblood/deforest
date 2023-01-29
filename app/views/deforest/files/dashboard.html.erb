@@ -1,3 +1,28 @@
-<% @method_counts.each do |method_name, count| %>
-  <p><%= method_name %> = <%= count %></p>
+<h2>Top 20 percentile</h2>
+<% @top_percentile_methods.each do |method_name, color_and_count| %>
+  <span class="<%= color_and_count[:color] %>"><%= method_name %> = <%= color_and_count[:total_call_count] %></span><br/><br/>
 <% end %>
+
+<h2>Bottom 20 percentile</h2>
+<% @low_percentile_methods.each do |method_name, color_and_count| %>
+  <span class="<%= color_and_count[:color] %>"><%= method_name %> = <%= color_and_count[:total_call_count] %></span><br/><br/>
+<% end %>
+
+<h2>Between 20 and 80 percentile</h2>
+<% @medium_percentile_methods.each do |method_name, color_and_count| %>
+  <span class="<%= color_and_count[:color] %>"><%= method_name %> = <%= color_and_count[:total_call_count] %></span><br/><br/>
+<% end %>
+
+<style>
+  .highlight-red {
+    background: rgba(245, 66, 72, 0.8);
+  }
+  .highlight-yellow {
+    background: rgba(240, 240, 5, 0.8);
+    color: #000;
+  }
+  .highlight-green {
+    background: rgba(0, 227, 38, 0.8);
+    color: #000;
+  }
+</style>

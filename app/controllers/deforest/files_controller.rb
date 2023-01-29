@@ -3,13 +3,18 @@ require_dependency "deforest/application_controller"
 module Deforest
   class FilesController < ApplicationController
     def dashboard
-      @method_counts = []
-      Deforest::Log.group(:file_name, :method_name).count.sort_by { |line_no, n_calls| n_calls }.reverse.each do |file_method_name, call_count|
-        file_name, method_name = file_method_name
-        idx = file_name.index(/\/app\/models\/(\w)*.rb/)
-        next if idx.blank?
-        model_class_name = file_name[idx, file_name.size].gsub("/app/models/", "").chomp(".rb").camelize
-        @method_counts << ["#{model_class_name}##{method_name}", call_count]
+      @top_percentile_methods = {}
+      @medium_percentile_methods = {}
+      @low_percentile_methods = {}
+
+      Deforest::Log.percentile().each do |log, pcnt|
+        if pcnt >= 80
+          @top_percentile_methods["#{log.model_name}##{log.method_name}"] = { color: "highlight-red", total_call_count: log.count_sum }
+        elsif pcnt <= 20
+          @low_percentile_methods["#{log.model_name}##{log.method_name}"] = { color: "highlight-green", total_call_count: log.count_sum }
+        else
+          @medium_percentile_methods["#{log.model_name}##{log.method_name}"] = { color: "highlight-yellow", total_call_count: log.count_sum }
+        end
       end
     end
 

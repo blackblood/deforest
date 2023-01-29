@@ -98,16 +98,21 @@ module Deforest
   end
 
   def self.prepare_file_for_render(file)
-    line_no_count = Log.where(file_name: file).group(:line_no).count
+    line_no_count = Log.where(file_name: file).group(:line_no).select("line_no,SUM(count) AS count_sum").inject({}) { |h, el| h.merge!(el.line_no => el.count_sum) }
     stack = []
     current_highlight_color = nil
-    highlight = Log.get_highlight_colors_from_percentile(Log.percentile(file))
+    highlight = Log.get_highlight_colors_for_file(file)
     prepare_for_render(File.open(file).read) do |line, idx|
       idx += 1
       if line_no_count.has_key?(idx)
         stack = [1]
         current_highlight_color = highlight[idx]
-        "<span class='highlight-line #{current_highlight_color}'>" + line + "</span>&nbsp;&nbsp;<span class='method_call_count'>#{line_no_count[idx]}</span>"
+        last_log_for_current_line = Log.where(file_name: file).where(line_no: idx).order("created_at DESC").limit(1).first
+        "<span class='highlight-line #{current_highlight_color}'>" +
+          line +
+        "</span>&nbsp;&nbsp;" +
+        "<span class='method_call_count'>#{line_no_count[idx]}</span>" +
+        "<span class='last_accessed'>last called at: #{last_log_for_current_line.created_at.strftime('%m/%d/%Y')}</span>"
       else
         if stack.present?
           bracket_open_regex = Regexp.new(/(&nbsp;|\s|\A)(def|if|unless|while|until|case|for|class|module|do)\s/)
