@@ -2,6 +2,8 @@ require_dependency "deforest/application_controller"
 
 module Deforest
   class FilesController < ApplicationController
+    before_action :check_if_admin_logged_in
+
     def dashboard
       @top_percentile_methods = {}
       @medium_percentile_methods = {}
@@ -36,6 +38,14 @@ module Deforest
 
     def show
       @full_path = "#{Rails.root}/app/models/#{params[:file_name]}.rb"
+    end
+
+    private
+
+    def check_if_admin_logged_in
+      if send(Deforest.current_admin_method_name).blank?
+        raise ActionController::RoutingError.new('Not Found')
+      end
     end
   end
 end

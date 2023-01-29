@@ -4,10 +4,16 @@ require "active_support"
 require "active_record"
 
 module Deforest
+  mattr_accessor :write_logs_to_db_every_mins, :current_admin_method_name
   @@last_saved_log_file_at = nil
   @@saving_log_file = false
+  DEFAULT_WRITE_LOGS_TO_DB_EVERY_MINS = 15
 
   def self.initialize!
+    if block_given?
+      yield self
+      self.write_logs_to_db_every_mins = DEFAULT_WRITE_LOGS_TO_DB_EVERY_MINS if !self.write_logs_to_db_every_mins
+    end
     self.initialize_db_sync_file()
     models = Dir["#{Rails.root}/app/models/**/*.rb"].map do |f|
       idx = f.index("app/models")
@@ -38,7 +44,7 @@ module Deforest
               file_name, line_no = old_method.source_location
               puts "insert_into_logs(#{mname}, #{file_name}, #{line_no})"
               Deforest.insert_into_logs(mname, file_name, line_no)
-              if @@last_saved_log_file_at < 1.minute.ago && !@@saving_log_file
+              if @@last_saved_log_file_at < Deforest.write_logs_to_db_every_mins.ago && !@@saving_log_file
                 Deforest.parse_and_save_log_file()
                 t = Time.zone.now
                 @@last_saved_log_file_at = t
