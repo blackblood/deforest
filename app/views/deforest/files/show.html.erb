@@ -1,16 +1,6 @@
-<!-- <pre class="line-numbers" data-line="5-10, 15-20"><code class="language-ruby"><%#= Deforest.prepare_for_render(@source_code) %></code></pre> -->
 <code>
   <%= Deforest.prepare_file_for_render(@full_path).html_safe %>
 </code>
-
-<script type="text/javascript">
-  Prism.hooks.add('line-numbers', function(env) {
-    debugger;
-    if (env.token == "entity") {
-      env.attributes[""]
-    }
-  });
-</script>
 
 <style>
   .method_call_count {
