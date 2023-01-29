@@ -120,23 +120,26 @@ module Deforest
         "<span class='method_call_count'>#{line_no_count[idx]}</span>" +
         "<span class='last_accessed'>last called at: #{last_log_for_current_line.created_at.strftime('%m/%d/%Y')}</span>"
       else
-        if stack.present?
-          bracket_open_regex = Regexp.new(/(&nbsp;|\s|\A)(def|if|unless|while|until|case|for|class|module|do)\s/)
-          if (matched = line.match(bracket_open_regex)).present?
-            keyword = matched.captures.join("").strip
-            if %w[if unless while until].include?(keyword)
-              stack << 1 if line =~ /(&nbsp;)+(#{keyword})\w*/
-            else
-              stack << 1
-            end
-          end
-          if line =~ /(&nbsp;|\s|\A)(end)(?!\w)/
-            stack.pop
-          end
-          "<span class='highlight-line #{current_highlight_color}'>" + line + "</span>"
-        else
-          "<span>#{line}</span>"
-        end
+        "<span>#{line}</span>"
+      # end
+        # else
+      #   if stack.present?
+      #     bracket_open_regex = Regexp.new(/(&nbsp;|\s|\A)(def|if|unless|while|until|case|for|class|module|do)\s/)
+      #     if (matched = line.match(bracket_open_regex)).present?
+      #       keyword = matched.captures.join("").strip
+      #       if %w[if unless while until].include?(keyword)
+      #         stack << 1 if line =~ /(&nbsp;)+(#{keyword})\w*/
+      #       else
+      #         stack << 1
+      #       end
+      #     end
+      #     if line =~ /(&nbsp;|\s|\A)(end)(?!\w)/
+      #       stack.pop
+      #     end
+      #     "<span class='highlight-line #{current_highlight_color}'>" + line + "</span>"
+      #   else
+      #     "<span>#{line}</span>"
+      #   end
       end
     end
   end
