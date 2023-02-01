@@ -7,12 +7,10 @@ module Deforest
   mattr_accessor :write_logs_to_db_every_mins, :current_admin_method_name
   @@last_saved_log_file_at = nil
   @@saving_log_file = false
-  DEFAULT_WRITE_LOGS_TO_DB_EVERY_MINS = 15
 
   def self.initialize!
     if block_given?
       yield self
-      self.write_logs_to_db_every_mins = DEFAULT_WRITE_LOGS_TO_DB_EVERY_MINS if !self.write_logs_to_db_every_mins
     end
     self.initialize_db_sync_file()
     models = Dir["#{Rails.root}/app/models/**/*.rb"].map do |f|
@@ -31,7 +29,7 @@ module Deforest
       end
       begin
         model = exec_str.constantize
-      rescue
+      rescue Exception => e
         puts "warning: could not load #{exec_str}"
       end
       puts "Inside Deforest: #{model}"
@@ -52,6 +50,22 @@ module Deforest
               end
               old_method.bind(self).call(*args, &block)
             end 
+          end
+        end
+        model.singleton_methods(false).each do |mname|
+          model.singleton_class.send(:alias_method, "old_#{mname}", mname)
+          model.define_singleton_method mname do |*args, &block|
+            old_method = self.singleton_method("old_#{mname}")
+            file_name, line_no = old_method.source_location
+            puts "insert_into_logs(#{mname}, #{file_name}, #{line_no})"
+            Deforest.insert_into_logs(mname, file_name, line_no)
+            if @@last_saved_log_file_at < Deforest.write_logs_to_db_every_mins.ago && !@@saving_log_file
+              Deforest.parse_and_save_log_file()
+              t = Time.zone.now
+              @@last_saved_log_file_at = t
+              File.open("deforest_db_sync.txt", "w") { |f| f.write(t.to_i) }
+            end
+            old_method.unbind.bind(self).call(*args, &block)
           end
         end
       end
@@ -121,25 +135,6 @@ module Deforest
         "<span class='last_accessed'>last called at: #{last_log_for_current_line.created_at.strftime('%m/%d/%Y')}</span>"
       else
         "<span>#{line}</span>"
-      # end
-        # else
-      #   if stack.present?
-      #     bracket_open_regex = Regexp.new(/(&nbsp;|\s|\A)(def|if|unless|while|until|case|for|class|module|do)\s/)
-      #     if (matched = line.match(bracket_open_regex)).present?
-      #       keyword = matched.captures.join("").strip
-      #       if %w[if unless while until].include?(keyword)
-      #         stack << 1 if line =~ /(&nbsp;)+(#{keyword})\w*/
-      #       else
-      #         stack << 1
-      #       end
-      #     end
-      #     if line =~ /(&nbsp;|\s|\A)(end)(?!\w)/
-      #       stack.pop
-      #     end
-      #     "<span class='highlight-line #{current_highlight_color}'>" + line + "</span>"
-      #   else
-      #     "<span>#{line}</span>"
-      #   end
       end
     end
   end
