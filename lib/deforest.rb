@@ -4,7 +4,7 @@ require "active_support"
 require "active_record"
 
 module Deforest
-  mattr_accessor :write_logs_to_db_every_mins, :current_admin_method_name
+  mattr_accessor :write_logs_to_db_every_mins, :current_admin_method_name, :most_used_percentile_threshold, :least_used_percentile_threshold
   @@last_saved_log_file_at = nil
   @@saving_log_file = false
 
@@ -113,6 +113,8 @@ module Deforest
     if File.exists?("deforest_tmp.log")
       File.delete("deforest.log")
       File.rename("deforest_tmp.log", "deforest.log")
+    else
+      File.delete("deforest.log")
     end
     @@saving_log_file = false
   end

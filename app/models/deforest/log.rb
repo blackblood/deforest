@@ -8,7 +8,7 @@ module Deforest
     end
 
     def self.percentile()
-      grouped_logs = Deforest::Log.group(:file_name, :line_no, :method_name).select("file_name, line_no, method_name, SUM(count) AS count_sum")
+      grouped_logs = Deforest::Log.where("file_name ilike '%/app/models/%'").group(:file_name, :line_no, :method_name).select("file_name, line_no, method_name, SUM(count) AS count_sum")
       groups_of_count_sum = grouped_logs.group_by { |r| r.count_sum }
       n = groups_of_count_sum.size
       result = Hash.new { |h,k| h[k] = nil }
@@ -23,9 +23,9 @@ module Deforest
     def self.get_highlight_colors_for_file(file_name)
       result = {}
       self.percentile.select { |log, _| log.file_name == file_name }.each do |log, pcnt|
-        result[log.line_no] = if pcnt <= 20
+        result[log.line_no] = if pcnt <= Deforest.least_used_percentile_threshold
           "highlight-green"
-        elsif pcnt >= 80
+        elsif pcnt >= Deforest.most_used_percentile_threshold
           "highlight-red"
         else
           "highlight-yellow"

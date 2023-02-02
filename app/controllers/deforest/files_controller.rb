@@ -10,9 +10,9 @@ module Deforest
       @low_percentile_methods = {}
 
       Deforest::Log.percentile().each do |log, pcnt|
-        if pcnt >= 80
+        if pcnt >= Deforest.most_used_percentile_threshold
           @top_percentile_methods["#{log.model_name}##{log.method_name}"] = { color: "highlight-red", total_call_count: log.count_sum }
-        elsif pcnt <= 20
+        elsif pcnt <= Deforest.least_used_percentile_threshold
           @low_percentile_methods["#{log.model_name}##{log.method_name}"] = { color: "highlight-green", total_call_count: log.count_sum }
         else
           @medium_percentile_methods["#{log.model_name}##{log.method_name}"] = { color: "highlight-yellow", total_call_count: log.count_sum }

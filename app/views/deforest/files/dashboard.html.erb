@@ -1,14 +1,14 @@
-<h2>Top 20 percentile</h2>
+<h2>Top <%= 100 - Deforest.most_used_percentile_threshold %> percentile</h2>
 <% @top_percentile_methods.each do |method_name, color_and_count| %>
   <span class="<%= color_and_count[:color] %>"><%= method_name %> = <%= color_and_count[:total_call_count] %></span><br/><br/>
 <% end %>
 
-<h2>Bottom 20 percentile</h2>
+<h2>Bottom <%= Deforest.least_used_percentile_threshold %> percentile</h2>
 <% @low_percentile_methods.each do |method_name, color_and_count| %>
   <span class="<%= color_and_count[:color] %>"><%= method_name %> = <%= color_and_count[:total_call_count] %></span><br/><br/>
 <% end %>
 
-<h2>Between 20 and 80 percentile</h2>
+<h2>Between <%= Deforest.least_used_percentile_threshold %> and <%= Deforest.most_used_percentile_threshold %> percentile</h2>
 <% @medium_percentile_methods.each do |method_name, color_and_count| %>
   <span class="<%= color_and_count[:color] %>"><%= method_name %> = <%= color_and_count[:total_call_count] %></span><br/><br/>
 <% end %>
