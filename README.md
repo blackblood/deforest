@@ -31,3 +31,6 @@ There are a few settings you can tweak in `config/initializers/deforest.rb`.
 `most_used_percentile_threshold`: Percentile threshold to tell Deforest what methods should be considered most used.
 
 `least_used_percentile_threshold`: Percentile threshold to tell Deforest what methods should be considered least used.
+
+## Contributing
+Feel free to dive in! Open an <a href="https://github.com/blackblood/deforest/issues">issue</a> or submit PRs.
