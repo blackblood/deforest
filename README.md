@@ -11,6 +11,7 @@ Mention `gem deforest` in your Gemfile or install using `gem install deforest`. 
 Once the gem is installed, run `rake deforest`. This will create an initializer file `deforest.rb` in config/initializer.
 
 Next, run `rake deforest:install:migrations`, this will create a deforest_logs table which stores the method usage data.
+run `rake db:migrate`
 
 Finally, add `mount Deforest::Engine => '/deforest'` in your `routes.rb`
 
@@ -23,7 +24,7 @@ To check usage data of all your models goto `/deforest/files`.
 ## Configuration
 There are a few settings you can tweak in `config/initializers/deforest.rb`.
 
-`write_logs_to_db_every_mins`: Deforest will persist data from the log file to the DB every `write_logs_to_db_every_mins`. Change this to `5.minutes` or `1.hour` or anything else, depending on your application workload.
+`write_logs_to_db_every`: Deforest will persist data from the log file to the DB every `write_logs_to_db_every`. Change this to `5.minutes` or `1.hour` or anything else, depending on your application workload.
 
 `current_admin_method_name`: `/deforest` urls are restricted only to logged in admins. You need to tell Deforest how to access the current logged in admin user object. By default, it's set to `current_admin`
 

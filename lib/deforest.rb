@@ -4,7 +4,7 @@ require "active_support"
 require "active_record"
 
 module Deforest
-  mattr_accessor :write_logs_to_db_every_mins, :current_admin_method_name, :most_used_percentile_threshold, :least_used_percentile_threshold
+  mattr_accessor :write_logs_to_db_every, :current_admin_method_name, :most_used_percentile_threshold, :least_used_percentile_threshold
   @@last_saved_log_file_at = nil
   @@saving_log_file = false
 
@@ -40,9 +40,12 @@ module Deforest
             define_method mname do |*args, &block|
               old_method = self.class.instance_method("old_#{mname}")
               file_name, line_no = old_method.source_location
-              puts "insert_into_logs(#{mname}, #{file_name}, #{line_no})"
+              if file_name.include?("/app/models")
+                puts "insert_into_logs(#{mname}, #{file_name}, #{line_no})"
+                Deforest.insert_into_logs(mname, file_name, line_no)
+              end
               Deforest.insert_into_logs(mname, file_name, line_no)
-              if @@last_saved_log_file_at < Deforest.write_logs_to_db_every_mins.ago && !@@saving_log_file
+              if @@last_saved_log_file_at < Deforest.write_logs_to_db_every.ago && !@@saving_log_file
                 Deforest.parse_and_save_log_file()
                 t = Time.zone.now
                 @@last_saved_log_file_at = t
@@ -57,9 +60,11 @@ module Deforest
           model.define_singleton_method mname do |*args, &block|
             old_method = self.singleton_method("old_#{mname}")
             file_name, line_no = old_method.source_location
-            puts "insert_into_logs(#{mname}, #{file_name}, #{line_no})"
-            Deforest.insert_into_logs(mname, file_name, line_no)
-            if @@last_saved_log_file_at < Deforest.write_logs_to_db_every_mins.ago && !@@saving_log_file
+            if file_name.include?("/app/models")
+              puts "insert_into_logs(#{mname}, #{file_name}, #{line_no})"
+              Deforest.insert_into_logs(mname, file_name, line_no)
+            end
+            if @@last_saved_log_file_at < Deforest.write_logs_to_db_every.ago && !@@saving_log_file
               Deforest.parse_and_save_log_file()
               t = Time.zone.now
               @@last_saved_log_file_at = t

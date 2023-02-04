@@ -23,21 +23,19 @@ module Deforest
     def index
       @dirs = []
       @files = []
-      Dir["#{Rails.root}/app/models/**/*.rb"].each do |m|
-        idx = m.index("app/models")
-        models_heirarchy = m[idx..-1].gsub("app/models/","")
-        parent, *children = models_heirarchy.split("/")
-        if children.present?
-          @dirs << parent
+      @path = params[:path] || "#{Rails.root}/app/models"
+      Dir.entries(@path)[2..-1].each do |m|
+        if Dir.exists?("#{@path}/#{m}")
+          @dirs << m
         else
-          @files << parent
+          @files << m
         end
       end
       @dirs.uniq!
     end
 
     def show
-      @full_path = "#{Rails.root}/app/models/#{params[:file_name]}.rb"
+      @full_path = "#{params[:path]}/#{params[:file_name]}.rb"
     end
 
     private
