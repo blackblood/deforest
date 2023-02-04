@@ -30,3 +30,10 @@
     margin-left: 10px;
   }
 </style>
+
+<script>
+  function scroll() {
+    document.getElementById('<%= params[:line_no] %>').scrollIntoView();
+  }
+  document.addEventListener("DOMContentLoaded", scroll);
+</script>

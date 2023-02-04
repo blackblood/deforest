@@ -135,7 +135,7 @@ module Deforest
         stack = [1]
         current_highlight_color = highlight[idx]
         last_log_for_current_line = Log.where(file_name: file).where(line_no: idx).order("created_at DESC").limit(1).first
-        "<span class='highlight-line #{current_highlight_color}'>" +
+        "<span id='#{idx}' class='highlight-line #{current_highlight_color}'>" +
           line +
         "</span>&nbsp;&nbsp;" +
         "<span class='method_call_count'>#{line_no_count[idx]}</span>" +

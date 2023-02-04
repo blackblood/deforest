@@ -11,11 +11,11 @@ module Deforest
 
       Deforest::Log.percentile().each do |log, pcnt|
         if pcnt >= Deforest.most_used_percentile_threshold
-          @top_percentile_methods["#{log.model_name}##{log.method_name}"] = { color: "highlight-red", total_call_count: log.count_sum }
+          @top_percentile_methods["#{log.model_name}##{log.method_name}"] = { color: "highlight-red", total_call_count: log.count_sum, file_name: log.file_name, line_no: log.line_no }
         elsif pcnt <= Deforest.least_used_percentile_threshold
-          @low_percentile_methods["#{log.model_name}##{log.method_name}"] = { color: "highlight-green", total_call_count: log.count_sum }
+          @low_percentile_methods["#{log.model_name}##{log.method_name}"] = { color: "highlight-green", total_call_count: log.count_sum, file_name: log.file_name, line_no: log.line_no }
         else
-          @medium_percentile_methods["#{log.model_name}##{log.method_name}"] = { color: "highlight-yellow", total_call_count: log.count_sum }
+          @medium_percentile_methods["#{log.model_name}##{log.method_name}"] = { color: "highlight-yellow", total_call_count: log.count_sum, file_name: log.file_name, line_no: log.line_no }
         end
       end
     end
@@ -35,7 +35,8 @@ module Deforest
     end
 
     def show
-      @full_path = "#{params[:path]}/#{params[:file_name]}.rb"
+      @full_path = params[:path]
+      # @full_path = "#{params[:path]}/#{params[:file_name]}.rb"
     end
 
     private

@@ -1,8 +1,16 @@
 <% @dirs.each do |d| %>
-  <span><%= link_to d, files_path(path: @path + "/#{d}") %></span>
-  <br/>
+  <div class="link dir-link"><%= link_to d, files_path(path: @path + "/#{d}") %></div>
+  <hr />
 <% end %>
 <% @files.each do |f| %>
-  <span><%= link_to f, file_path(path: @path, file_name: f) %></span>
-  <br/>
+  <div class="link file-link"><%= link_to f, file_path(path: "#{@path}/#{f}") %></div>
+  <hr />
 <% end %>
+
+<style>
+  .link {
+    width: 100%;
+    padding: 10px;
+    # border: 1px solid #999999;
+  }
+</style>
