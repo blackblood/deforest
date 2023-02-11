@@ -13,7 +13,7 @@ module Deforest
       yield self
     end
     self.initialize_db_sync_file()
-    models = Dir["#{Rails.root}/app/models/**/*.rb"].map do |f|
+    Dir["#{Rails.root}/app/models/**/*.rb"].map do |f|
       idx = f.index("app/models")
       models_heirarchy = f[idx..-1].gsub("app/models/","")
       exec_str = ""
@@ -29,7 +29,7 @@ module Deforest
       end
       begin
         model = exec_str.constantize
-      rescue Exception => e
+      rescue
         puts "warning: could not load #{exec_str}"
       end
       puts "Inside Deforest: #{model}"
@@ -49,7 +49,7 @@ module Deforest
                 Deforest.parse_and_save_log_file()
                 t = Time.zone.now
                 @@last_saved_log_file_at = t
-                File.open("deforest_db_sync.txt", "w") { |f| f.write(t.to_i) }
+                File.open("deforest_db_sync.txt", "w") { |fl| fl.write(t.to_i) }
               end
               old_method.bind(self).call(*args, &block)
             end 
@@ -68,7 +68,7 @@ module Deforest
               Deforest.parse_and_save_log_file()
               t = Time.zone.now
               @@last_saved_log_file_at = t
-              File.open("deforest_db_sync.txt", "w") { |f| f.write(t.to_i) }
+              File.open("deforest_db_sync.txt", "w") { |fl| fl.write(t.to_i) }
             end
             old_method.unbind.bind(self).call(*args, &block)
           end

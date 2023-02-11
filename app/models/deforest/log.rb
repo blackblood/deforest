@@ -8,11 +8,11 @@ module Deforest
     end
 
     def self.percentile()
-      grouped_logs = Deforest::Log.where("file_name ilike '%/app/models/%'").group(:file_name, :line_no, :method_name).select("file_name, line_no, method_name, SUM(count) AS count_sum")
+      grouped_logs = Deforest::Log.where("file_name like '%/app/models/%'").group(:file_name, :line_no, :method_name).select("file_name, line_no, method_name, SUM(count) AS count_sum")
       groups_of_count_sum = grouped_logs.group_by { |r| r.count_sum }
       n = groups_of_count_sum.size
       result = Hash.new { |h,k| h[k] = nil }
-      groups_of_count_sum.sort_by { |count, logs| count }.each_with_index do |(count, logs), idx|
+      groups_of_count_sum.sort_by { |count, logs| count }.each_with_index do |(_, logs), idx|
         logs.each do |log, _|
           result[log] = (idx.to_f / n) * 100
         end

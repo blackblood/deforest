@@ -1,13 +1,37 @@
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
-  file_name: MyString
-  line_no: 1
-  method_name: MyString
-  count: 1
+  file_name: /Users/johndoe/workspace/app/models/setting.rb
+  line_no: 27
+  method_name: refresh_cache
+  count: 2
 
 two:
-  file_name: MyString
-  line_no: 1
-  method_name: MyString
-  count: 1
+  file_name: /Users/johndoe/workspace/app/models/doctor.rb
+  line_no: 2144
+  method_name: lock_user
+  count: 10
+
+three:
+  file_name: /Users/johndoe/workspace/app/models/doctor.rb
+  line_no: 33
+  method_name: open
+  count: 35
+
+fourth:
+  file_name: /Users/johndoe/workspace/app/models/user.rb
+  line_no: 100
+  method_name: get_user_name
+  count: 100
+
+fifth:
+  file_name: /Users/johndoe/workspace/app/models/user.rb
+  line_no: 200
+  method_name: get_email
+  count: 300
+
+# sixth:
+#   file_name: /Users/johndoe/workspace/app/models/corporate/user.rb
+#   line_no: 1050
+#   method_name: get_access
+#   count: 200
