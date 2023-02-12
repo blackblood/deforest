@@ -2,9 +2,9 @@
 > 80% of the effects come from 20% of the causes - Pareto principle
 
 Get insights into method call stats in production. Deforest tracks all your model method calls in production and presents method usage data segmented as most used (red), medium used (yellow) and least used (green).
-![High usage method](https://user-images.githubusercontent.com/1737753/218309751-55a29b1d-dc38-476e-987b-271e976162bd.png)
-![Medium usage method](https://user-images.githubusercontent.com/1737753/218309462-5aaac171-3708-4f78-a3d7-3326dba3d02a.png)
-![Low usage method](https://user-images.githubusercontent.com/1737753/218309539-efa93ca0-8af6-405a-8d11-c6af121503e8.png)
+![High usage method](https://user-images.githubusercontent.com/1737753/218310194-68913ce3-75b9-49c4-aead-ab5eaa5185c0.png)
+![Medium usage method](https://user-images.githubusercontent.com/1737753/218310233-81951339-c364-4d85-92f8-da3dbb012c78.png)
+![Low usage method](https://user-images.githubusercontent.com/1737753/218310273-a3a68516-bbe8-41e3-bbc2-2fbbf67d1511.png)
 
 You can anaylze this data the next time you are refactoring some code and want to know the impact of your change. Or if it's bearly used you may even decide to get rid of that code or whatever else. Use your imagination!
 
