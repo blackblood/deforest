@@ -30,9 +30,8 @@ module Deforest
       begin
         model = exec_str.constantize
       rescue
-        puts "warning: could not load #{exec_str}"
+        puts "Deforest warning: could not track #{exec_str}"
       end
-      puts "Inside Deforest: #{model}"
       if model.present?
         model.instance_methods(false).each do |mname|
           model.instance_eval do
@@ -41,7 +40,6 @@ module Deforest
               old_method = self.class.instance_method("old_#{mname}")
               file_name, line_no = old_method.source_location
               if file_name.include?("/app/models")
-                puts "insert_into_logs(#{mname}, #{file_name}, #{line_no})"
                 Deforest.insert_into_logs(mname, file_name, line_no)
               end
               Deforest.insert_into_logs(mname, file_name, line_no)
@@ -61,7 +59,6 @@ module Deforest
             old_method = self.singleton_method("old_#{mname}")
             file_name, line_no = old_method.source_location
             if file_name.include?("/app/models")
-              puts "insert_into_logs(#{mname}, #{file_name}, #{line_no})"
               Deforest.insert_into_logs(mname, file_name, line_no)
             end
             if @@last_saved_log_file_at < Deforest.write_logs_to_db_every.ago && !@@saving_log_file
