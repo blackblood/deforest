@@ -22,9 +22,10 @@ Gem::Specification.new do |s|
   # s.add_runtime_dependency "sqlite3", "1.4.2"
   s.add_runtime_dependency "activerecord", "~> 4"
   s.add_runtime_dependency "activesupport", "~> 4"
+  s.add_runtime_dependency "jquery-rails", "~> 4"
+
   s.add_development_dependency "bundler", "~> 1.17"
   s.add_development_dependency "rake"
   s.add_development_dependency "rails", "~> 4"
   s.add_development_dependency "sqlite3", "~> 1.3.11"
-  # s.add_development_dependency "jquery"
 end

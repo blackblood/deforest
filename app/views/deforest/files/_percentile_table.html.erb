@@ -1,0 +1,31 @@
+<h4><%= heading %></h4>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>File Name</th>
+      <th>Method Name</th>
+      <th>Line Number</th>
+      <th>Count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% method_stats.each do |method_name, color_and_count| %>
+      <tr>
+        <td>
+          <%= color_and_count[:file_name] %>
+        </td>
+        <td>
+          <a href=<%= file_path(path: color_and_count[:file_name], line_no: color_and_count[:line_no]) %>>
+            <%= method_name %>
+          </a>
+        </td>
+        <td>
+          <%= color_and_count[:line_no] %>
+        </td>
+        <td>
+          <%= color_and_count[:total_call_count] %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

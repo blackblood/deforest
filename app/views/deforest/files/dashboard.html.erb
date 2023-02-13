@@ -1,28 +1,6 @@
-<h2>Top <%= 100 - Deforest.most_used_percentile_threshold %> percentile</h2>
-<% @top_percentile_methods.each do |method_name, color_and_count| %>
-  <a href=<%= file_path(path: "#{color_and_count[:file_name]}", line_no: color_and_count[:line_no]) %> class="<%= color_and_count[:color] %>"><%= method_name %> = <%= color_and_count[:total_call_count] %></a><br/><br/>
-<% end %>
-
-<h2>Bottom <%= Deforest.least_used_percentile_threshold %> percentile</h2>
-<% @low_percentile_methods.each do |method_name, color_and_count| %>
-  <a href=<%= file_path(path: "#{color_and_count[:file_name]}", line_no: color_and_count[:line_no]) %> class="<%= color_and_count[:color] %>"><%= method_name %> = <%= color_and_count[:total_call_count] %></a><br/><br/>
-<% end %>
-
-<h2>Between <%= Deforest.least_used_percentile_threshold %> and <%= Deforest.most_used_percentile_threshold %> percentile</h2>
-<% @medium_percentile_methods.each do |method_name, color_and_count| %>
-  <a href=<%= file_path(path: "#{color_and_count[:file_name]}", line_no: color_and_count[:line_no]) %> class="<%= color_and_count[:color] %>"><%= method_name %> = <%= color_and_count[:total_call_count] %></a><br/><br/>
-<% end %>
-
-<style>
-  .highlight-red {
-    background: rgba(245, 66, 72, 0.8);
-  }
-  .highlight-yellow {
-    background: rgba(240, 240, 5, 0.8);
-    color: #000;
-  }
-  .highlight-green {
-    background: rgba(0, 227, 38, 0.8);
-    color: #000;
-  }
-</style>
+<nav class="navbar navbar-dark bg-dark">
+  <a class="navbar-brand" href="#">Deforest</a>
+</nav>
+<%= render partial: "percentile_table", locals: { heading: "Top #{100 - Deforest.most_used_percentile_threshold} percentile", method_stats: @top_percentile_methods } %>
+<%= render partial: "percentile_table", locals: { heading: "Bottom #{100 - Deforest.most_used_percentile_threshold} percentile", method_stats: @low_percentile_methods } %>
+<%= render partial: "percentile_table", locals: { heading: "Between #{Deforest.least_used_percentile_threshold} and #{Deforest.most_used_percentile_threshold} percentile", method_stats: @medium_percentile_methods } %>
