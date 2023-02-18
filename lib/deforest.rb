@@ -80,8 +80,8 @@ module Deforest
   end
 
   def self.initialize_db_sync_file
-    File.open("deforest.log", "w") unless File.exists?("deforest.log")
-    if File.exists?("deforest_db_sync.txt")
+    File.open("deforest.log", "w") unless File.exist?("deforest.log")
+    if File.exist?("deforest_db_sync.txt")
       @@last_saved_log_file_at = Time.at(File.open("deforest_db_sync.txt").read.to_i)
     else
       File.open("deforest_db_sync.txt", "w") do |f|
@@ -120,7 +120,7 @@ module Deforest
     sql_stmt += ";"
     if hash.present?
       ActiveRecord::Base.connection.execute(sql_stmt)
-      if File.exists?("deforest_tmp.log")
+      if File.exist?("deforest_tmp.log")
         File.delete("deforest.log")
         File.rename("deforest_tmp.log", "deforest.log")
       else
