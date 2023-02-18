@@ -8,12 +8,8 @@ module Deforest
   @@last_saved_log_file_at = nil
   @@saving_log_file = false
 
-  def self.initialize!
-    if block_given?
-      yield self
-    end
-    self.initialize_db_sync_file()
-    Dir["#{Rails.root}/app/models/**/*.rb"].map do |f|
+  def self.get_app_models
+    Dir["#{Rails.root}/app/models/**/*.rb"].each do |f|
       idx = f.index("app/models")
       models_heirarchy = f[idx..-1].gsub("app/models/","")
       exec_str = ""
@@ -29,9 +25,19 @@ module Deforest
       end
       begin
         model = exec_str.constantize
+        yield model
       rescue
         puts "Deforest warning: could not track #{exec_str}"
       end
+    end
+  end
+  
+  def self.initialize!
+    if block_given?
+      yield self
+    end
+    self.initialize_db_sync_file()
+    self.get_app_models do |model|
       if model.present?
         model.instance_methods(false).each do |mname|
           model.instance_eval do

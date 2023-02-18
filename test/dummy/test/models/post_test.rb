@@ -17,4 +17,12 @@ class PostTest < ActiveSupport::TestCase
     p.get_title_with_italics
     assert Deforest::Log.count == orig_count + 1
   end
+
+  test "get app models" do
+    app_models = [Post, User, Special::Post, Special::Custom::Post]
+    Deforest.get_app_models do |m|
+      assert_includes app_models, m
+      app_models.delete(m)
+    end
+  end
 end
