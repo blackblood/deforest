@@ -113,7 +113,8 @@ module Deforest
       end
     end
     hash.each do |loc, count|
-      sql_stmt += "(#{loc.split("|").map { |s| "'#{s}'" }.join(",")}, #{count}, current_timestamp, current_timestamp),"
+      t = Time.zone.now
+      sql_stmt += "(#{loc.split("|").map { |s| "'#{s}'" }.join(",")}, #{count}, '#{t}', '#{t}'),"
     end
     sql_stmt.chomp!(",")
     sql_stmt += ";"

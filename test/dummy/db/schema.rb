@@ -13,12 +13,6 @@
 
 ActiveRecord::Schema.define(version: 20230218161957) do
 
-  create_table "ar_internal_metadata", primary_key: "key", force: :cascade do |t|
-    t.string   "value"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
   create_table "deforest_logs", force: :cascade do |t|
     t.string   "file_name"
     t.integer  "line_no"

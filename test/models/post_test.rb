@@ -13,7 +13,7 @@ class PostTest < ActiveSupport::TestCase
     orig_count = Deforest::Log.count
     File.open("deforest_db_sync.txt", "w") { |f| f.write(1.hour.ago.to_i.to_s) }
     Deforest.initialize_db_sync_file
-    p = Post.last
+    p = posts(:one)
     p.get_title_with_italics
     assert Deforest::Log.count == orig_count + 1
   end
