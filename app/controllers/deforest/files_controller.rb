@@ -39,6 +39,20 @@ module Deforest
       # @full_path = "#{params[:path]}/#{params[:file_name]}.rb"
     end
 
+    def extension_data
+      result = Hash.new { |h,k| h[k] = [] }
+      Log.percentile.each do |log, pcnt|
+        if pcnt >= Deforest.most_used_percentile_threshold
+          result[log.file_name] << { line_no: log.line_no, use_type: "most_used", call_count: log.count_sum }
+        elsif pcnt <= Deforest.least_used_percentile_threshold
+          result[log.file_name] << { line_no: log.line_no, use_type: "least_used", call_count: log.count_sum }
+        else
+          result[log.file_name] << { line_no: log.line_no, use_type: "medium_used", call_count: log.count_sum }
+        end
+      end
+      send_data result.to_json, filename: "deforest.json", type: "application/json", disposition: "attachment"
+    end
+
     private
 
     def check_if_admin_logged_in

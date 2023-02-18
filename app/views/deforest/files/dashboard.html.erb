@@ -1,5 +1,12 @@
 <nav class="navbar navbar-dark bg-dark">
   <a class="navbar-brand" href="#">Deforest</a>
+  <div id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item active">
+        <%= link_to "Extension Data", files_extension_data_path, class: "nav-link active", aria: { current: "page" } %>
+      </li>
+    </ul>
+  </div>
 </nav>
 <%= render partial: "percentile_table", locals: { heading: "Top #{100 - Deforest.most_used_percentile_threshold} percentile", method_stats: @top_percentile_methods } %>
 <%= render partial: "percentile_table", locals: { heading: "Bottom #{100 - Deforest.most_used_percentile_threshold} percentile", method_stats: @low_percentile_methods } %>

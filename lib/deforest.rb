@@ -42,7 +42,6 @@ module Deforest
               if file_name.include?("/app/models")
                 Deforest.insert_into_logs(mname, file_name, line_no)
               end
-              Deforest.insert_into_logs(mname, file_name, line_no)
               if @@last_saved_log_file_at < Deforest.write_logs_to_db_every.ago && !@@saving_log_file
                 Deforest.parse_and_save_log_file()
                 t = Time.zone.now
@@ -75,6 +74,7 @@ module Deforest
   end
 
   def self.initialize_db_sync_file
+    File.open("deforest.log", "w") unless File.exists?("deforest.log")
     if File.exists?("deforest_db_sync.txt")
       @@last_saved_log_file_at = Time.at(File.open("deforest_db_sync.txt").read.to_i)
     else
@@ -111,12 +111,14 @@ module Deforest
     end
     sql_stmt.chomp!(",")
     sql_stmt += ";"
-    ActiveRecord::Base.connection.execute(sql_stmt)
-    if File.exists?("deforest_tmp.log")
-      File.delete("deforest.log")
-      File.rename("deforest_tmp.log", "deforest.log")
-    else
-      File.delete("deforest.log")
+    if hash.present?
+      ActiveRecord::Base.connection.execute(sql_stmt)
+      if File.exists?("deforest_tmp.log")
+        File.delete("deforest.log")
+        File.rename("deforest_tmp.log", "deforest.log")
+      else
+        File.delete("deforest.log")
+      end
     end
     @@saving_log_file = false
   end
