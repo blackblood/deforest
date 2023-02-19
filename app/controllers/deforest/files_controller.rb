@@ -3,6 +3,7 @@ require_dependency "deforest/application_controller"
 module Deforest
   class FilesController < ApplicationController
     before_action :check_if_admin_logged_in
+    before_action :should_render_source, only: [:index, :show]
 
     def dashboard
       @top_percentile_methods = {}
@@ -60,6 +61,12 @@ module Deforest
     def check_if_admin_logged_in
       if send(Deforest.current_admin_method_name).blank?
         raise ActionController::RoutingError.new('Not Found')
+      end
+    end
+
+    def should_render_source
+      if !Deforest.render_source_on_browser
+        redirect_to files_dashboard_path and return
       end
     end
   end

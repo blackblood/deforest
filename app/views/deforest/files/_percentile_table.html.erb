@@ -15,9 +15,13 @@
           <%= color_and_count[:file_name] %>
         </td>
         <td>
-          <a href=<%= file_path(path: color_and_count[:file_name], line_no: color_and_count[:line_no]) %>>
+          <% if Deforest.render_source_on_browser %>
+            <a href=<%= file_path(path: color_and_count[:file_name], line_no: color_and_count[:line_no]) %>>
+              <%= method_name %>
+            </a>
+          <% else %>
             <%= method_name %>
-          </a>
+          <% end %>
         </td>
         <td>
           <%= color_and_count[:line_no] %>

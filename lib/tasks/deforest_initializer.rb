@@ -3,5 +3,5 @@ Deforest.initialize! do |config|
   config.current_admin_method_name = :current_admin
   config.most_used_percentile_threshold = 80
   config.least_used_percentile_threshold = 20
-  config.track_dirs = ["/app/models"]
+  config.track_dirs = ["/app/models", "/app/controllers", "/app/helpers"]
 end

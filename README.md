@@ -21,8 +21,9 @@ Finally, add `mount Deforest::Engine => '/deforest'` in your `routes.rb`
 That's it, you are all set. Now deforest will start collecting data into a log file. For every method call the gem will write some stats to the `deforest.log` file and periodically will persist the log file data to the `deforest_logs` table. By default it writes to the table every 1 minute but you can override this by setting `config.write_logs_to_db_every` (takes a datetime object) in `config/initializer/deforest.rb` 
 
 ## Usage
-To see method usage data goto `/deforest/files/dashboard`. 
-To check usage data of all your models goto `/deforest/files`.
+To see method usage data goto `/deforest/files/dashboard`. By default data will be shown for models, however you can check data for your other directories using the "Directory" dropdown in the header.
+
+If you use VS Code, you can view usage stats by downloading the extension data by clicking on "Extension Data" link. Once the file is downloaded, place it in the root of your application folder. Open VScode, download the Deforest extension, then go to any file you want to view usage stats for and then press (cmd + shft + p) -> select "deforest" in the command pallete. Scroll through the file to see methods highlighted in (red|yellow|green). You can hover over the method names to see the actual call count.
 
 ## Configuration
 There are a few settings you can tweak in `config/initializers/deforest.rb`.
@@ -30,6 +31,10 @@ There are a few settings you can tweak in `config/initializers/deforest.rb`.
 `write_logs_to_db_every`: Deforest will persist data from the log file to the DB every `write_logs_to_db_every`. Change this to `5.minutes` or `1.hour` or anything else, depending on your application workload.
 
 `current_admin_method_name`: `/deforest` urls are restricted only to logged in admins. You need to tell Deforest how to access the current logged in admin user object. By default, it's set to `current_admin`
+
+`track_dirs`: add or remove directories you want deforest to track. default: ["/app/models", "/app/controllers", "/app/helpers"]
+
+`render_source_on_browser`: (true|false) whether deforest should read your source files and render the usage data in browser. Deforest checks if admin is logged-in before rendering source code on the browser. However, if you are not comfortable with your source code being accessible from a browser, you can set this to false.
 
 `most_used_percentile_threshold`: Percentile threshold to tell Deforest what methods should be considered most used.
 
