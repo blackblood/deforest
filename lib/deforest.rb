@@ -4,14 +4,14 @@ require "active_support"
 require "active_record"
 
 module Deforest
-  mattr_accessor :write_logs_to_db_every, :current_admin_method_name, :most_used_percentile_threshold, :least_used_percentile_threshold
+  mattr_accessor :write_logs_to_db_every, :current_admin_method_name, :most_used_percentile_threshold, :least_used_percentile_threshold, :track_dirs
   @@last_saved_log_file_at = nil
   @@saving_log_file = false
 
-  def self.get_app_models
-    Dir["#{Rails.root}/app/models/**/*.rb"].each do |f|
-      idx = f.index("app/models")
-      models_heirarchy = f[idx..-1].gsub("app/models/","")
+  def self.get_app_classes(dir)
+    Dir["#{Rails.root}#{dir}/**/*.rb"].each do |f|
+      idx = f.index(dir)
+      models_heirarchy = f[idx..-1].gsub(dir,"")
       exec_str = ""
       loop do
         parent, *children = models_heirarchy.split("/")
@@ -31,49 +31,59 @@ module Deforest
       end
     end
   end
+
+  def self.override_instance_methods_for(klass, dir)
+    klass.instance_methods(false).each do |mname|
+      klass.instance_eval do
+        alias_method "old_#{mname}", mname
+        define_method mname do |*args, &block|
+          old_method = self.class.instance_method("old_#{mname}")
+          file_name, line_no = old_method.source_location
+          if file_name.include?(dir)
+            Deforest.insert_into_logs(mname, file_name, line_no)
+          end
+          if @@last_saved_log_file_at < Deforest.write_logs_to_db_every.ago && !@@saving_log_file
+            Deforest.parse_and_save_log_file()
+            t = Time.zone.now
+            @@last_saved_log_file_at = t
+            File.open("deforest_db_sync.txt", "w") { |fl| fl.write(t.to_i) }
+          end
+          old_method.bind(self).call(*args, &block)
+        end 
+      end
+    end
+  end
+
+  def self.override_class_methods_for(klass, dir)
+    klass.singleton_methods(false).each do |mname|
+      klass.singleton_class.send(:alias_method, "old_#{mname}", mname)
+      klass.define_singleton_method mname do |*args, &block|
+        old_method = self.singleton_method("old_#{mname}")
+        file_name, line_no = old_method.source_location
+        if file_name.include?(dir)
+          Deforest.insert_into_logs(mname, file_name, line_no)
+        end
+        if @@last_saved_log_file_at < Deforest.write_logs_to_db_every.ago && !@@saving_log_file
+          Deforest.parse_and_save_log_file()
+          t = Time.zone.now
+          @@last_saved_log_file_at = t
+          File.open("deforest_db_sync.txt", "w") { |fl| fl.write(t.to_i) }
+        end
+        old_method.unbind.bind(self).call(*args, &block)
+      end
+    end
+  end
   
   def self.initialize!
     if block_given?
       yield self
     end
     self.initialize_db_sync_file()
-    self.get_app_models do |model|
-      if model.present?
-        model.instance_methods(false).each do |mname|
-          model.instance_eval do
-            alias_method "old_#{mname}", mname
-            define_method mname do |*args, &block|
-              old_method = self.class.instance_method("old_#{mname}")
-              file_name, line_no = old_method.source_location
-              if file_name.include?("/app/models")
-                Deforest.insert_into_logs(mname, file_name, line_no)
-              end
-              if @@last_saved_log_file_at < Deforest.write_logs_to_db_every.ago && !@@saving_log_file
-                Deforest.parse_and_save_log_file()
-                t = Time.zone.now
-                @@last_saved_log_file_at = t
-                File.open("deforest_db_sync.txt", "w") { |fl| fl.write(t.to_i) }
-              end
-              old_method.bind(self).call(*args, &block)
-            end 
-          end
-        end
-        model.singleton_methods(false).each do |mname|
-          model.singleton_class.send(:alias_method, "old_#{mname}", mname)
-          model.define_singleton_method mname do |*args, &block|
-            old_method = self.singleton_method("old_#{mname}")
-            file_name, line_no = old_method.source_location
-            if file_name.include?("/app/models")
-              Deforest.insert_into_logs(mname, file_name, line_no)
-            end
-            if @@last_saved_log_file_at < Deforest.write_logs_to_db_every.ago && !@@saving_log_file
-              Deforest.parse_and_save_log_file()
-              t = Time.zone.now
-              @@last_saved_log_file_at = t
-              File.open("deforest_db_sync.txt", "w") { |fl| fl.write(t.to_i) }
-            end
-            old_method.unbind.bind(self).call(*args, &block)
-          end
+    Deforest.track_dirs.each do |dir|
+      self.get_app_classes(dir) do |model|
+        if model.present?
+          self.override_instance_methods_for(model, dir)
+          self.override_class_methods_for(model, dir) unless dir.include?("/app/controllers")
         end
       end
     end

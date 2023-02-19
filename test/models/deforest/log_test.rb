@@ -5,6 +5,7 @@ module Deforest
     setup do
       Deforest.least_used_percentile_threshold = 20
       Deforest.most_used_percentile_threshold = 80
+      Deforest.track_dirs = ["/app/models"]
       Setting = nil
       User = nil
     end
@@ -15,7 +16,7 @@ module Deforest
     end
 
     test "percentile" do
-      Log.percentile.each do |l,n|
+      Log.percentile("/app/models").each do |l,n|
         case l.method_name
         when "refresh_cache"
           assert_equal n, 0

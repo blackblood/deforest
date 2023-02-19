@@ -20,7 +20,7 @@ class PostTest < ActiveSupport::TestCase
 
   test "get app models" do
     app_models = [Post, User, Special::Post, Special::Custom::Post]
-    Deforest.get_app_models do |m|
+    Deforest.get_app_classes("/app/models") do |m|
       assert_includes app_models, m
       app_models.delete(m)
     end
