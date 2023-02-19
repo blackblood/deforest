@@ -32,7 +32,7 @@ There are a few settings you can tweak in `config/initializers/deforest.rb`.
 
 `current_admin_method_name`: `/deforest` urls are restricted only to logged in admins. You need to tell Deforest how to access the current logged in admin user object. By default, it's set to `current_admin`
 
-`track_dirs`: add or remove directories you want deforest to track. default: ["/app/models", "/app/controllers", "/app/helpers"]
+`track_dirs`: add or remove directories you want deforest to track. default: `["/app/models", "/app/controllers", "/app/helpers"]`
 
 `render_source_on_browser`: (true|false) whether deforest should read your source files and render the usage data in browser. Deforest checks if admin is logged-in before rendering source code on the browser. However, if you are not comfortable with your source code being accessible from a browser, you can set this to false.
 
@@ -41,7 +41,8 @@ There are a few settings you can tweak in `config/initializers/deforest.rb`.
 `least_used_percentile_threshold`: Percentile threshold to tell Deforest what methods should be considered least used.
 
 ## Features in pipeline
-VS Code extension so you can see the highlighted methods in your editor itself instead of reading code on the browser.
+~~VS Code extension so you can see the highlighted methods in your editor itself instead of reading code on the browser.~~ (DONE)
+Sublime text extension so you can see the highlighted methods in your editor itself instead of reading code on the browser.
 
 ## Contributing
 Feel free to dive in! Open an <a href="https://github.com/blackblood/deforest/issues">issue</a> or submit PRs.

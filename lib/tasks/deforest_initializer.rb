@@ -4,4 +4,5 @@ Deforest.initialize! do |config|
   config.most_used_percentile_threshold = 80
   config.least_used_percentile_threshold = 20
   config.track_dirs = ["/app/models", "/app/controllers", "/app/helpers"]
+  config.render_source_on_browser = true
 end
