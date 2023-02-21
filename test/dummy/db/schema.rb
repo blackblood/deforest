@@ -11,7 +11,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20230218161957) do
+ActiveRecord::Schema.define(version: 20230219174900) do
+
+  create_table "comments", force: :cascade do |t|
+    t.text     "body"
+    t.integer  "author_id"
+    t.integer  "post_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
   create_table "deforest_logs", force: :cascade do |t|
     t.string   "file_name"
