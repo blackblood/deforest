@@ -2,15 +2,20 @@ require 'test_helper'
 
 class DeforestTest < ActiveSupport::TestCase
   setup do
-    Deforest.class_variable_set("@@last_saved_log_file_at", nil)
+    File.open("deforest_db_sync.txt", "w") { |f| f.write(1.hour.ago.to_i.to_s) }
+    Deforest.initialize_db_sync_file
+    Deforest.class_variable_set('@@write_logs_to_db_every', 1.minute)
+  end
+
+  teardown do
+    File.delete("deforest_db_sync.txt") if File.exist?("deforest_db_sync.txt")
+    File.delete("deforest.log") if File.exist?("deforest.log")
   end
 
   test "initialize db_sync_file when db_sync_file does not exist" do
-    if File.exist?("deforest_db_sync.txt")
-      File.delete("deforest_db_sync.txt")
-      Deforest.initialize_db_sync_file
-      assert Deforest.class_variable_get("@@last_saved_log_file_at") > 1.minute.ago.to_i
-    end
+    File.delete("deforest_db_sync.txt")
+    Deforest.initialize_db_sync_file
+    assert Deforest.class_variable_get("@@last_saved_log_file_at") > 1.minute.ago
   end
 
   test "initialize db_sync_file when db_sync_file does exist" do

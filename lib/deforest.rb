@@ -95,9 +95,9 @@ module Deforest
       @@last_saved_log_file_at = Time.at(File.open("deforest_db_sync.txt").read.to_i)
     else
       File.open("deforest_db_sync.txt", "w") do |f|
-        current_time = Time.zone.now.to_i
+        current_time = Time.zone.now
         @@last_saved_log_file_at = current_time
-        f.write(current_time)
+        f.write(current_time.to_i)
       end
     end
   end
