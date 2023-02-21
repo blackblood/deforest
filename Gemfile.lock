@@ -2,9 +2,9 @@ PATH
   remote: .
   specs:
     deforest (0.0.1)
-      activerecord (~> 4)
-      activesupport (~> 4)
-      jquery-rails (~> 4)
+      activerecord (>= 4)
+      activesupport (>= 4)
+      jquery-rails
 
 GEM
   remote: https://rubygems.org/
