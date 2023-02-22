@@ -34,10 +34,34 @@ module Deforest
 
   def self.override_instance_methods_for(klass, dir)
     klass.instance_methods(false).each do |mname|
-      klass.instance_eval do
-        alias_method "old_#{mname}", mname
-        define_method mname do |*args, &block|
-          old_method = self.class.instance_method("old_#{mname}")
+      if klass.instance_method(mname).source_location.first.ends_with?("#{klass.to_s.underscore}.rb")
+        klass.instance_eval do
+          alias_method "old_#{mname}", mname
+          define_method mname do |*args, &block|
+            old_method = self.class.instance_method("old_#{mname}")
+            file_name, line_no = old_method.source_location
+            if file_name.include?(dir)
+              Deforest.insert_into_logs(mname, file_name, line_no)
+            end
+            if @@last_saved_log_file_at < Deforest.write_logs_to_db_every.ago && !@@saving_log_file
+              Deforest.parse_and_save_log_file()
+              t = Time.zone.now
+              @@last_saved_log_file_at = t
+              File.open("deforest_db_sync.txt", "w") { |fl| fl.write(t.to_i) }
+            end
+            old_method.bind(self).call(*args, &block)
+          end 
+        end
+      end
+    end
+  end
+
+  def self.override_class_methods_for(klass, dir)
+    klass.singleton_methods(false).each do |mname|
+      if klass.singleton_method(mname).source_location.first.ends_with?("#{klass.to_s.underscore}.rb")
+        klass.singleton_class.send(:alias_method, "old_#{mname}", mname)
+        klass.define_singleton_method mname do |*args, &block|
+          old_method = self.singleton_method("old_#{mname}")
           file_name, line_no = old_method.source_location
           if file_name.include?(dir)
             Deforest.insert_into_logs(mname, file_name, line_no)
@@ -48,28 +72,8 @@ module Deforest
             @@last_saved_log_file_at = t
             File.open("deforest_db_sync.txt", "w") { |fl| fl.write(t.to_i) }
           end
-          old_method.bind(self).call(*args, &block)
-        end 
-      end
-    end
-  end
-
-  def self.override_class_methods_for(klass, dir)
-    klass.singleton_methods(false).each do |mname|
-      klass.singleton_class.send(:alias_method, "old_#{mname}", mname)
-      klass.define_singleton_method mname do |*args, &block|
-        old_method = self.singleton_method("old_#{mname}")
-        file_name, line_no = old_method.source_location
-        if file_name.include?(dir)
-          Deforest.insert_into_logs(mname, file_name, line_no)
+          old_method.unbind.bind(self).call(*args, &block)
         end
-        if @@last_saved_log_file_at < Deforest.write_logs_to_db_every.ago && !@@saving_log_file
-          Deforest.parse_and_save_log_file()
-          t = Time.zone.now
-          @@last_saved_log_file_at = t
-          File.open("deforest_db_sync.txt", "w") { |fl| fl.write(t.to_i) }
-        end
-        old_method.unbind.bind(self).call(*args, &block)
       end
     end
   end
