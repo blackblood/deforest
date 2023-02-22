@@ -44,6 +44,9 @@ There are a few settings you can tweak in `config/initializers/deforest.rb`.
 
 `least_used_percentile_threshold`: Percentile threshold to tell Deforest what methods should be considered least used.
 
+## Caveats
+Deforest is not tested in a multi-threaded/multi-process setup. It may not work. Will be fixing it in future releases.
+
 ## Features in pipeline
 ~~VS Code extension so you can see the highlighted methods in your editor itself instead of reading code on the browser.~~ (DONE)
 Sublime text extension so you can see the highlighted methods in your editor itself instead of reading code on the browser.
