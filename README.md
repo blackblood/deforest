@@ -23,7 +23,11 @@ That's it, you are all set. Now deforest will start collecting data into a log f
 ## Usage
 To see method usage data goto `/deforest/files/dashboard`. By default data will be shown for models, however you can check data for your other directories using the "Directory" dropdown in the header.
 
+![Dashboard](https://user-images.githubusercontent.com/1737753/220743618-befdee12-c861-4733-abdd-7ab92143c39c.png)
+
 If you use VS Code, you can view usage stats by downloading the extension data by clicking on "Extension Data" link. Once the file is downloaded, place it in the root of your application folder. Open VScode, download the Deforest extension, then go to any file you want to view usage stats for and then press (cmd + shft + p) -> select "deforest" in the command pallete. Scroll through the file to see methods highlighted in (red|yellow|green). You can hover over the method names to see the actual call count.
+
+![VS Code Extension](https://user-images.githubusercontent.com/1737753/220743043-3e3e9ba8-f8d6-4ad1-8790-6bdbcba274ee.png)
 
 ## Configuration
 There are a few settings you can tweak in `config/initializers/deforest.rb`.

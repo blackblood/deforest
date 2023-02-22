@@ -4,9 +4,7 @@ require "active_support"
 require "active_record"
 
 module Deforest
-  mattr_accessor :write_logs_to_db_every, :current_admin_method_name, :most_used_percentile_threshold, :least_used_percentile_threshold, :track_dirs, :render_source_on_browser
-  @@last_saved_log_file_at = nil
-  @@saving_log_file = false
+  mattr_accessor :write_logs_to_db_every, :current_admin_method_name, :most_used_percentile_threshold, :least_used_percentile_threshold, :track_dirs, :render_source_on_browser, :last_saved_log_file_at, :saving_log_file
 
   def self.get_app_classes(dir)
     Dir["#{Rails.root}#{dir}/**/*.rb"].each do |f|
@@ -31,52 +29,6 @@ module Deforest
       end
     end
   end
-
-  def self.override_instance_methods_for(klass, dir)
-    klass.instance_methods(false).each do |mname|
-      if klass.instance_method(mname).source_location.first.ends_with?("#{klass.to_s.underscore}.rb")
-        klass.instance_eval do
-          alias_method "old_#{mname}", mname
-          define_method mname do |*args, &block|
-            old_method = self.class.instance_method("old_#{mname}")
-            file_name, line_no = old_method.source_location
-            if file_name.include?(dir)
-              Deforest.insert_into_logs(mname, file_name, line_no)
-            end
-            if @@last_saved_log_file_at < Deforest.write_logs_to_db_every.ago && !@@saving_log_file
-              Deforest.parse_and_save_log_file()
-              t = Time.zone.now
-              @@last_saved_log_file_at = t
-              File.open("deforest_db_sync.txt", "w") { |fl| fl.write(t.to_i) }
-            end
-            old_method.bind(self).call(*args, &block)
-          end 
-        end
-      end
-    end
-  end
-
-  def self.override_class_methods_for(klass, dir)
-    klass.singleton_methods(false).each do |mname|
-      if klass.singleton_method(mname).source_location.first.ends_with?("#{klass.to_s.underscore}.rb")
-        klass.singleton_class.send(:alias_method, "old_#{mname}", mname)
-        klass.define_singleton_method mname do |*args, &block|
-          old_method = self.singleton_method("old_#{mname}")
-          file_name, line_no = old_method.source_location
-          if file_name.include?(dir)
-            Deforest.insert_into_logs(mname, file_name, line_no)
-          end
-          if @@last_saved_log_file_at < Deforest.write_logs_to_db_every.ago && !@@saving_log_file
-            Deforest.parse_and_save_log_file()
-            t = Time.zone.now
-            @@last_saved_log_file_at = t
-            File.open("deforest_db_sync.txt", "w") { |fl| fl.write(t.to_i) }
-          end
-          old_method.unbind.bind(self).call(*args, &block)
-        end
-      end
-    end
-  end
   
   def self.initialize!
     if block_given?
@@ -84,10 +36,49 @@ module Deforest
     end
     self.initialize_db_sync_file()
     Deforest.track_dirs.each do |dir|
-      self.get_app_classes(dir) do |model|
-        if model.present?
-          self.override_instance_methods_for(model, dir)
-          self.override_class_methods_for(model, dir) unless dir.include?("/app/controllers")
+      self.get_app_classes(dir) do |klass|
+        if klass.present?
+          klass.prepend(Module.new do
+            klass.instance_methods(false).each do |mname|
+              method_location = klass.instance_method(mname).source_location
+              if method_location.first.ends_with?("#{klass.to_s.underscore}.rb")
+                define_method mname do |*args, &block|
+                  file_name, line_no = method_location
+                  if file_name.include?(dir)
+                    Deforest.insert_into_logs(mname, file_name, line_no)
+                  end
+                  if Deforest.last_saved_log_file_at < Deforest.write_logs_to_db_every.ago && !Deforest.saving_log_file
+                    Deforest.parse_and_save_log_file()
+                    t = Time.zone.now
+                    Deforest.last_saved_log_file_at = t
+                    File.open("deforest_db_sync.txt", "w") { |fl| fl.write(t.to_i) }
+                  end
+                  super(*args, &block)
+                end
+              end
+            end
+          end)
+          
+          klass.singleton_class.prepend(Module.new do
+            klass.singleton_methods(false).each do |mname|
+              method_location = klass.singleton_method(mname).source_location
+              if method_location.first.ends_with?("#{klass.to_s.underscore}.rb")
+                define_method mname do |*args, &block|
+                  file_name, line_no = method_location
+                  if file_name.include?(dir)
+                    Deforest.insert_into_logs(mname, file_name, line_no)
+                  end
+                  if Deforest.last_saved_log_file_at < Deforest.write_logs_to_db_every.ago && !Deforest.saving_log_file
+                    Deforest.parse_and_save_log_file()
+                    t = Time.zone.now
+                    Deforest.last_saved_log_file_at = t
+                    File.open("deforest_db_sync.txt", "w") { |fl| fl.write(t.to_i) }
+                  end
+                  super(*args, &block)
+                end
+              end
+            end
+          end)
         end
       end
     end
@@ -96,11 +87,11 @@ module Deforest
   def self.initialize_db_sync_file
     File.open("deforest.log", "w") unless File.exist?("deforest.log")
     if File.exist?("deforest_db_sync.txt")
-      @@last_saved_log_file_at = Time.at(File.open("deforest_db_sync.txt").read.to_i)
+      Deforest.last_saved_log_file_at = Time.at(File.open("deforest_db_sync.txt").read.to_i)
     else
       File.open("deforest_db_sync.txt", "w") do |f|
         current_time = Time.zone.now
-        @@last_saved_log_file_at = current_time
+        Deforest.last_saved_log_file_at = current_time
         f.write(current_time.to_i)
       end
     end
@@ -108,14 +99,14 @@ module Deforest
 
   def self.insert_into_logs(method_name, file_name, line_no)
     key = "#{file_name}|#{line_no}|#{method_name}\n"
-    log_file_name = @@saving_log_file ? "deforest_tmp.log" : "deforest.log"
+    log_file_name = Deforest.saving_log_file ? "deforest_tmp.log" : "deforest.log"
     File.open(log_file_name, "a") do |f|
       f.write(key)
     end
   end
 
   def self.parse_and_save_log_file
-    @@saving_log_file = true
+    Deforest.saving_log_file = true
     sql_stmt = "INSERT INTO deforest_logs (file_name, line_no, method_name, count, created_at, updated_at) VALUES "
     hash = {}
     File.foreach("deforest.log") do |line|
@@ -141,7 +132,7 @@ module Deforest
         File.delete("deforest.log")
       end
     end
-    @@saving_log_file = false
+    Deforest.saving_log_file = false
   end
 
   def self.prepare_file_for_render(file)
@@ -159,7 +150,7 @@ module Deforest
           line +
         "</span>&nbsp;&nbsp;" +
         "<span class='method_call_count'>#{line_no_count[idx]}</span>" +
-        "<span class='last_accessed'>last called at: #{last_log_for_current_line.created_at.strftime('%m/%d/%Y')}</span>"
+        "<span class='last_accessed'>last called at: #{last_log_for_current_line.created_at.localtime.strftime('%m/%d/%Y')}</span>"
       else
         "<span>#{line}</span>"
       end

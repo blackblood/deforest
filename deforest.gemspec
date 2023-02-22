@@ -25,7 +25,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "jquery-rails"
 
   s.add_development_dependency "bundler", "~> 1.17"
-  s.add_development_dependency "rake"
+  s.add_development_dependency "rake", "12.3"
   s.add_development_dependency "rails", ">= 4"
   s.add_development_dependency "sqlite3", "~> 1.3.11"
 end

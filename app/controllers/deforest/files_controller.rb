@@ -60,6 +60,7 @@ module Deforest
 
     def check_if_admin_logged_in
       if send(Deforest.current_admin_method_name).blank?
+        puts "Make sure to set config.current_admin_method_name to the correct method in config/initializers/deforest.rb"
         raise ActionController::RoutingError.new('Not Found')
       end
     end
