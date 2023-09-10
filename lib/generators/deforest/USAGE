@@ -1,8 +1,9 @@
 Description:
-    Explain the generator
+    Generate initializer file and migration file for logs.
 
 Example:
-    rails generate deforest Thing
+    rails g deforest
 
     This will create:
-        what/will/it/create
+        db/migrate/[TIMESTAMP]create_deforest_logs.rb
+        config/initializers/deforest.rb

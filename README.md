@@ -11,9 +11,8 @@ You can anaylze this data the next time you are refactoring some code and want t
 # Setup
 Mention `gem deforest` in your Gemfile or install using `gem install deforest`. Then run `bundle install`.
 
-Once the gem is installed, run `rake deforest`. This will create an initializer file `deforest.rb` in config/initializer.
+Once the gem is installed, run `rails g deforest`. This will create an initializer file `deforest.rb` in config/initializer and a migration file for storing logs.
 
-Next, run `rake deforest:install:migrations`, this will create a deforest_logs table which stores the method usage data.
 run `rake db:migrate`
 
 Finally, add `mount Deforest::Engine => '/deforest'` in your `routes.rb`
