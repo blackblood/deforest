@@ -10,22 +10,46 @@ module Deforest
     Dir["#{Rails.root}#{dir}/**/*.rb"].each do |f|
       idx = f.index(dir)
       models_heirarchy = f[idx..-1].gsub(dir,"")
-      exec_str = ""
-      loop do
-        parent, *children = models_heirarchy.split("/")
-        if children.any?
-          exec_str += "#{parent.camelize}::"
-        else
-          exec_str += parent.chomp(".rb").camelize
-          break
-        end
-        models_heirarchy = children.join("/")
-      end
+      exec_str = models_heirarchy.split("/").map(&:camelize).join("::").chomp(".rb")
       begin
         model = exec_str.constantize
         yield model
       rescue
         puts "Deforest warning: could not track #{exec_str}"
+      end
+    end
+  end
+
+  def self.inject_tracking_module(klass, dir, method_type)
+    track_methods = if method_type == 'instance'
+      klass.instance_methods(false)
+    elsif method_type == 'class'
+      klass.singleton_methods(false)
+    else
+      raise "Unknown method type: #{method_type}"
+    end
+    Module.new do
+      track_methods.each do |mname|
+        method_location = if method_type == 'instance'
+          klass.instance_method(mname).source_location
+        else
+          klass.singleton_method(mname).source_location
+        end
+        if method_location.first.ends_with?("#{klass.to_s.underscore}.rb")
+          define_method mname do |*args, &block|
+            file_name, line_no = method_location
+            if file_name.include?(dir)
+              Deforest.insert_into_logs(mname, file_name, line_no)
+            end
+            if Deforest.last_saved_log_file_at < Deforest.write_logs_to_db_every.ago && !Deforest.saving_log_file
+              Deforest.parse_and_save_log_file()
+              t = Time.zone.now
+              Deforest.last_saved_log_file_at = t
+              File.open("deforest_db_sync.txt", "w") { |fl| fl.write(t.to_i) }
+            end
+            super(*args, &block)
+          end
+        end
       end
     end
   end
@@ -38,47 +62,8 @@ module Deforest
     Deforest.track_dirs.each do |dir|
       self.get_app_classes(dir) do |klass|
         if klass.present?
-          klass.prepend(Module.new do
-            klass.instance_methods(false).each do |mname|
-              method_location = klass.instance_method(mname).source_location
-              if method_location.first.ends_with?("#{klass.to_s.underscore}.rb")
-                define_method mname do |*args, &block|
-                  file_name, line_no = method_location
-                  if file_name.include?(dir)
-                    Deforest.insert_into_logs(mname, file_name, line_no)
-                  end
-                  if Deforest.last_saved_log_file_at < Deforest.write_logs_to_db_every.ago && !Deforest.saving_log_file
-                    Deforest.parse_and_save_log_file()
-                    t = Time.zone.now
-                    Deforest.last_saved_log_file_at = t
-                    File.open("deforest_db_sync.txt", "w") { |fl| fl.write(t.to_i) }
-                  end
-                  super(*args, &block)
-                end
-              end
-            end
-          end)
-          
-          klass.singleton_class.prepend(Module.new do
-            klass.singleton_methods(false).each do |mname|
-              method_location = klass.singleton_method(mname).source_location
-              if method_location.first.ends_with?("#{klass.to_s.underscore}.rb")
-                define_method mname do |*args, &block|
-                  file_name, line_no = method_location
-                  if file_name.include?(dir)
-                    Deforest.insert_into_logs(mname, file_name, line_no)
-                  end
-                  if Deforest.last_saved_log_file_at < Deforest.write_logs_to_db_every.ago && !Deforest.saving_log_file
-                    Deforest.parse_and_save_log_file()
-                    t = Time.zone.now
-                    Deforest.last_saved_log_file_at = t
-                    File.open("deforest_db_sync.txt", "w") { |fl| fl.write(t.to_i) }
-                  end
-                  super(*args, &block)
-                end
-              end
-            end
-          end)
+          klass.prepend(Deforest.inject_tracking_module(klass, dir, 'instance'))
+          klass.singleton_class.prepend(Deforest.inject_tracking_module(klass, dir, 'class'))
         end
       end
     end
