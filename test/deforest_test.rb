@@ -2,31 +2,31 @@ require 'test_helper'
 
 class DeforestTest < ActiveSupport::TestCase
   setup do
-    File.open("deforest_db_sync.txt", "w") { |f| f.write(1.hour.ago.to_i.to_s) }
+    File.open("deforest_db_sync.#{Process.pid}.txt", "w") { |f| f.write(1.hour.ago.to_i.to_s) }
     Deforest.initialize_db_sync_file
     Deforest.class_variable_set('@@write_logs_to_db_every', 1.minute)
   end
 
   teardown do
-    File.delete("deforest_db_sync.txt") if File.exist?("deforest_db_sync.txt")
-    File.delete("deforest.log") if File.exist?("deforest.log")
+    File.delete("deforest_db_sync.#{Process.pid}.txt") if File.exist?("deforest_db_sync.#{Process.pid}.txt")
+    File.delete("deforest.#{Process.pid}.log") if File.exist?("deforest.#{Process.pid}.log")
   end
 
   test "initialize db_sync_file when db_sync_file does not exist" do
-    File.delete("deforest_db_sync.txt")
+    File.delete("deforest_db_sync.#{Process.pid}.txt")
     Deforest.initialize_db_sync_file
     assert Deforest.class_variable_get("@@last_saved_log_file_at") > 1.minute.ago
   end
 
   test "initialize db_sync_file when db_sync_file does exist" do
-    File.open("deforest_db_sync.txt", "w") { |f| f.write("1676127114") }
+    File.open("deforest_db_sync.#{Process.pid}.txt", "w") { |f| f.write("1676127114") }
     Deforest.initialize_db_sync_file
     assert Deforest.class_variable_get("@@last_saved_log_file_at") == Time.at(1676127114)
   end
 
   test "insert into logs" do
     Deforest.insert_into_logs("lock_user", "/Users/johndoe/workspace/app/models/doctor.rb", 2144)
-    File.foreach("deforest.log") do |line|
+    File.foreach("deforest.#{Process.pid}.log") do |line|
       line = line.chomp("\n")
       file_name, line_no, method_name  = line.split("|")
       assert file_name == "/Users/johndoe/workspace/app/models/doctor.rb", "file_name mismatched"

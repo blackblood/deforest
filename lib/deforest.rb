@@ -45,7 +45,7 @@ module Deforest
               Deforest.parse_and_save_log_file()
               t = Time.zone.now
               Deforest.last_saved_log_file_at = t
-              File.open("deforest_db_sync.txt", "w") { |fl| fl.write(t.to_i) }
+              File.open("deforest_db_sync.#{Process.pid}.txt", "w") { |fl| fl.write(t.to_i) }
             end
             super(*args, &block)
           end
@@ -70,11 +70,11 @@ module Deforest
   end
 
   def self.initialize_db_sync_file
-    File.open("deforest.log", "w") unless File.exist?("deforest.log")
-    if File.exist?("deforest_db_sync.txt")
-      Deforest.last_saved_log_file_at = Time.at(File.open("deforest_db_sync.txt").read.to_i)
+    File.open("deforest.#{Process.pid}.log", "w") unless File.exist?("deforest.#{Process.pid}.log")
+    if File.exist?("deforest_db_sync.#{Process.pid}.txt")
+      Deforest.last_saved_log_file_at = Time.at(File.open("deforest_db_sync.#{Process.pid}.txt").read.to_i)
     else
-      File.open("deforest_db_sync.txt", "w") do |f|
+      File.open("deforest_db_sync.#{Process.pid}.txt", "w") do |f|
         current_time = Time.zone.now
         Deforest.last_saved_log_file_at = current_time
         f.write(current_time.to_i)
@@ -84,7 +84,7 @@ module Deforest
 
   def self.insert_into_logs(method_name, file_name, line_no)
     key = "#{file_name}|#{line_no}|#{method_name}\n"
-    log_file_name = Deforest.saving_log_file ? "deforest_tmp.log" : "deforest.log"
+    log_file_name = Deforest.saving_log_file ? "deforest_tmp.#{Process.pid}.log" : "deforest.#{Process.pid}.log"
     File.open(log_file_name, "a") do |f|
       f.write(key)
     end
@@ -94,7 +94,7 @@ module Deforest
     Deforest.saving_log_file = true
     sql_stmt = "INSERT INTO deforest_logs (file_name, line_no, method_name, count, created_at, updated_at) VALUES "
     hash = {}
-    File.foreach("deforest.log") do |line|
+    File.foreach("deforest.#{Process.pid}.log") do |line|
       line = line.chomp("\n")
       if hash.has_key?(line)
         hash[line] += 1
@@ -110,11 +110,11 @@ module Deforest
     sql_stmt += ";"
     if hash.present?
       ActiveRecord::Base.connection.execute(sql_stmt)
-      if File.exist?("deforest_tmp.log")
-        File.delete("deforest.log")
-        File.rename("deforest_tmp.log", "deforest.log")
+      if File.exist?("deforest_tmp.#{Process.pid}.log")
+        File.delete("deforest.#{Process.pid}.log")
+        File.rename("deforest_tmp.#{Process.pid}.log", "deforest.#{Process.pid}.log")
       else
-        File.delete("deforest.log")
+        File.delete("deforest.#{Process.pid}.log")
       end
     end
     Deforest.saving_log_file = false

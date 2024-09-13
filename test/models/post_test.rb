@@ -2,14 +2,14 @@ require 'test_helper'
 
 class PostTest < ActiveSupport::TestCase
   setup do
-    File.open("deforest_db_sync.txt", "w") { |f| f.write(1.hour.ago.to_i.to_s) }
+    File.open("deforest_db_sync.#{Process.pid}.txt", "w") { |f| f.write(1.hour.ago.to_i.to_s) }
     Deforest.initialize_db_sync_file    
     Deforest.class_variable_set('@@write_logs_to_db_every', 1.minute)
   end
 
   teardown do
-    File.delete("deforest_db_sync.txt") if File.exist?("deforest_db_sync.txt")
-    File.delete("deforest.log") if File.exist?("deforest.log")
+    File.delete("deforest_db_sync.#{Process.pid}.txt") if File.exist?("deforest_db_sync.#{Process.pid}.txt")
+    File.delete("deforest.#{Process.pid}.log") if File.exist?("deforest.#{Process.pid}.log")
   end
 
   test "calling a model class method should create a log entry" do
