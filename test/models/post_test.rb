@@ -32,4 +32,14 @@ class PostTest < ActiveSupport::TestCase
       app_models.delete(m)
     end
   end
+
+  test "most used method" do
+    _, _, method_name, _ = Deforest.most_used_methods[0]
+    assert method_name == "get_email"
+  end
+
+  test "least used method" do
+    _, _, method_name, _ = Deforest.least_used_methods[0]
+    assert method_name == "refresh_cache"
+  end
 end

@@ -157,4 +157,16 @@ module Deforest
       end
     end.join("<br/>")
   end
+
+  def self.most_used_methods(size=1)
+    method_call_count.sort_by { |fname, lno, method, cnt| cnt }.reverse.take(size)
+  end
+
+  def self.least_used_methods(size=1)
+    method_call_count.sort_by { |fname, lno, method, cnt| cnt }.take(size)
+  end
+
+  def self.method_call_count
+    Deforest::Log.group(:file_name, :line_no, :method_name).pluck("file_name, line_no, method_name, SUM(count)")
+  end
 end
