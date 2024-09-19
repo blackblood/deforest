@@ -34,12 +34,28 @@ class PostTest < ActiveSupport::TestCase
   end
 
   test "most used method" do
-    _, _, method_name, _ = Deforest.most_used_methods[0]
+    _, _, method_name, _ = Deforest.most_used_methods(nil, 1)[0]
     assert method_name == "get_email"
   end
 
+  test "top 2 most used methods" do
+    f1, f2 = Deforest.most_used_methods(nil, 2)
+    _, _, method_name, _ = f1
+    assert method_name == "get_email"
+    _, _, method_name, _ = f2
+    assert method_name == "get_user_name"
+  end
+
   test "least used method" do
-    _, _, method_name, _ = Deforest.least_used_methods[0]
+    _, _, method_name, _ = Deforest.least_used_methods(nil, 1)[0]
     assert method_name == "refresh_cache"
+  end
+
+  test "top 2 least used methods" do
+    f1, f2 = Deforest.least_used_methods(nil, 2)
+    _, _, method_name, _ = f1
+    assert method_name == "refresh_cache"
+    _, _, method_name, _ = f2
+    assert method_name == "lock_user"
   end
 end

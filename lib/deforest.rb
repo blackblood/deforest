@@ -158,15 +158,26 @@ module Deforest
     end.join("<br/>")
   end
 
-  def self.most_used_methods(size=1)
-    method_call_count.sort_by { |fname, lno, method, cnt| cnt }.reverse.take(size)
+  def self.most_used_methods(dir, size=1)
+    query = Deforest::Log.group(:file_name, :line_no, :method_name)
+    if dir.present?
+      query = query.where("file_name like '%#{dir}/%'")
+    end
+    res = query.pluck("file_name, line_no, method_name, SUM(count)")
+              .sort_by { |fname, lno, method, cnt| cnt }
+              .reverse
+    if size == nil
+      return res
+    else
+      return res.take(size)
+    end
   end
 
-  def self.least_used_methods(size=1)
-    method_call_count.sort_by { |fname, lno, method, cnt| cnt }.take(size)
-  end
-
-  def self.method_call_count
-    Deforest::Log.group(:file_name, :line_no, :method_name).pluck("file_name, line_no, method_name, SUM(count)")
+  def self.least_used_methods(dir, size=1)
+    if size == nil
+      self.most_used_methods(dir, nil).reverse
+    else
+      self.most_used_methods(dir, nil).reverse.take(size)
+    end
   end
 end
