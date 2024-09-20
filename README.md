@@ -37,7 +37,7 @@ There are a few settings you can tweak in `config/initializers/deforest.rb`.
 
 `write_logs_to_db_every`: Deforest will persist data from the log file to the DB every `write_logs_to_db_every`. Change this to `5.minutes` or `1.hour` or anything else, depending on your application workload.
 
-`You will want to restrict access to `/deforest` only to admins so I suggest you use something like the following (assuming you are using devise):`
+You will want to restrict access to `/deforest` only to admins so I suggest you use something like the following (assuming you are using devise):
 ```
 authenticated :admin, -> user { user.kind_of? Admin } do
   mount Deforest::Engine => '/deforest'
