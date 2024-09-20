@@ -1,29 +1,28 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <a class="navbar-brand" href="#">Deforest</a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
+<%= link_to "Extension Data", files_extension_data_path, id: "extension-data-btn", aria: { current: "page" } %>
 
-  <div class="collapse navbar-collapse" id="navbarSupportedContent">
-    <ul class="navbar-nav mr-auto">
-      <li class="nav-item active">
-      <%= link_to "Extension Data", files_extension_data_path, class: "nav-link active", aria: { current: "page" } %>
-      </li>
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-expanded="false">
-          Directory
-        </a>
-        <div class="dropdown-menu">
-          <% Deforest.track_dirs.each do |dir| %>
-            <a class="dropdown-item" href="<%= files_dashboard_path(dir: dir) %>"><%= dir %></a>
-          <% end %>
-        </div>
-      </li>
-    </ul>
-  </div>
-</nav>
+<%= form_tag files_dashboard_path, method: :get do %>
+  <%= label_tag "Show data for Directory" %>
+  <%= select_tag :dir, options_for_select(Deforest.track_dirs, params[:dir]) %>
+  <%= submit_tag "Submit" %>
+<% end %>
 
 
 <%= render partial: "percentile_table", locals: { heading: "Top #{100 - Deforest.most_used_percentile_threshold} percentile", method_stats: @top_percentile_methods } %>
 <%= render partial: "percentile_table", locals: { heading: "Bottom #{100 - Deforest.most_used_percentile_threshold} percentile", method_stats: @low_percentile_methods } %>
-<%= render partial: "percentile_table", locals: { heading: "Between #{Deforest.least_used_percentile_threshold} and #{Deforest.most_used_percentile_threshold} percentile", method_stats: @medium_percentile_methods } %>
+<%#= render partial: "percentile_table", locals: { heading: "Between #{Deforest.least_used_percentile_threshold} and #{Deforest.most_used_percentile_threshold} percentile", method_stats: @medium_percentile_methods } %>
+
+<style>
+  #extension-data-btn {
+    float: right;
+    padding: 10px;
+    background: blue;
+    color: white;
+    border-radius: 2px;
+    text-decoration: none;
+  }
+  table {
+    border-collapse: separate;
+    border-spacing: 10px;
+    margin-bottom: 50px;
+  }
+</style>

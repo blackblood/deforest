@@ -4,7 +4,7 @@ require "active_support"
 require "active_record"
 
 module Deforest
-  mattr_accessor :write_logs_to_db_every, :current_admin_method_name, :most_used_percentile_threshold, :least_used_percentile_threshold, :track_dirs, :render_source_on_browser, :last_saved_log_file_at, :saving_log_file
+  mattr_accessor :write_logs_to_db_every, :current_admin_method_name, :most_used_percentile_threshold, :least_used_percentile_threshold, :track_dirs, :last_saved_log_file_at, :saving_log_file
 
   def self.get_app_classes(dir)
     Dir["#{Rails.root}#{dir}/**/*.rb"].each do |f|
@@ -118,44 +118,6 @@ module Deforest
       end
     end
     Deforest.saving_log_file = false
-  end
-
-  def self.prepare_file_for_render(file)
-    line_no_count = Log.where(file_name: file).group(:line_no).select("line_no,SUM(count) AS count_sum").inject({}) { |h, el| h.merge!(el.line_no => el.count_sum) }
-    stack = []
-    current_highlight_color = nil
-    highlight = Log.get_highlight_colors_for_file(file)
-    prepare_for_render(File.open(file).read) do |line, idx|
-      idx += 1
-      if line_no_count.has_key?(idx)
-        stack = [1]
-        current_highlight_color = highlight[idx]
-        last_log_for_current_line = Log.where(file_name: file).where(line_no: idx).order("created_at DESC").limit(1).first
-        "<span id='#{idx}' class='highlight-line #{current_highlight_color}'>" +
-          line +
-        "</span>&nbsp;&nbsp;" +
-        "<span class='method_call_count'>#{line_no_count[idx]}</span>" +
-        "<span class='last_accessed'>last called at: #{last_log_for_current_line.created_at.localtime.strftime('%m/%d/%Y')}</span>"
-      else
-        "<span>#{line}</span>"
-      end
-    end
-  end
-
-  def self.prepare_for_render(source_code, add_line_number = true)
-    source_code.split("\n").map.with_index do |line, index|
-      first_letter_idx = line.chars.index { |ch| ch != " " }
-      if first_letter_idx && first_letter_idx >= 0 && first_letter_idx < line.size
-        leading_nbsp = (0...first_letter_idx).map { "&nbsp;" }.join("")
-        prepared_line = leading_nbsp.present? ? leading_nbsp + line.lstrip : line.strip
-        result_line = if block_given?
-          yield prepared_line + "\n", index
-        else
-          "<span>#{prepared_line}</span>"
-        end
-        "<span class='line-no'>#{index + 1}</span>" + result_line
-      end
-    end.join("<br/>")
   end
 
   def self.most_used_methods(dir, size=1)

@@ -2,9 +2,6 @@ require_dependency "deforest/application_controller"
 
 module Deforest
   class FilesController < ApplicationController
-    before_action :check_if_admin_logged_in
-    before_action :should_render_source, only: [:index, :show]
-
     def dashboard
       @top_percentile_methods = {}
       @medium_percentile_methods = {}
@@ -21,25 +18,6 @@ module Deforest
       end
     end
 
-    def index
-      @dirs = []
-      @files = []
-      @path = params[:path] || "#{Rails.root}/app/models"
-      Dir.entries(@path)[2..-1].each do |m|
-        if Dir.exists?("#{@path}/#{m}")
-          @dirs << m
-        else
-          @files << m
-        end
-      end
-      @dirs.uniq!
-    end
-
-    def show
-      @full_path = params[:path]
-      # @full_path = "#{params[:path]}/#{params[:file_name]}.rb"
-    end
-
     def extension_data
       result = Hash.new { |h,k| h[k] = [] }
       Deforest.track_dirs.each do |dir|
@@ -54,21 +32,6 @@ module Deforest
         end
       end
       send_data result.to_json, filename: "deforest.json", type: "application/json", disposition: "attachment"
-    end
-
-    private
-
-    def check_if_admin_logged_in
-      if send(Deforest.current_admin_method_name).blank?
-        puts "Make sure to set config.current_admin_method_name to the correct method in config/initializers/deforest.rb"
-        raise ActionController::RoutingError.new('Not Found')
-      end
-    end
-
-    def should_render_source
-      if !Deforest.render_source_on_browser
-        redirect_to files_dashboard_path and return
-      end
     end
   end
 end

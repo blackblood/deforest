@@ -1,4 +1,4 @@
-<h4><%= heading %></h4>
+<h3><%= heading %></h3>
 <table class="table table-striped">
   <thead>
     <tr>
@@ -15,13 +15,7 @@
           <%= color_and_count[:file_name] %>
         </td>
         <td>
-          <% if Deforest.render_source_on_browser %>
-            <a href=<%= file_path(path: color_and_count[:file_name], line_no: color_and_count[:line_no]) %>>
-              <%= method_name %>
-            </a>
-          <% else %>
-            <%= method_name %>
-          <% end %>
+          <%= method_name %>
         </td>
         <td>
           <%= color_and_count[:line_no] %>

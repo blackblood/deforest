@@ -20,7 +20,11 @@ Finally, add `mount Deforest::Engine => '/deforest'` in your `routes.rb`
 That's it, you are all set. Now deforest will start collecting data into a log file. For every method call the gem will write some stats to the `deforest.log` file and periodically will persist the log file data to the `deforest_logs` table. By default it writes to the table every 1 minute but you can override this by setting `config.write_logs_to_db_every` (takes a datetime object) in `config/initializer/deforest.rb` 
 
 ## Usage
-To see method usage data goto `/deforest/files/dashboard`. By default data will be shown for models, however you can check data for your other directories using the "Directory" dropdown in the header.
+`Deforest.most_used_methods(dir, size=1)`: returns the top `size` most used methods in a directory, if nil returns most used methods throughout the application. return type: `[file name, line number, method name, call count (how many times this method has been called)]`
+
+`Deforest.least_used_methods(dir, size=1)`: returns `size` least used methods in a directory, if nil returns least used methods throughout the application. return type: `[file name, line number, method name, call count (how many times this method has been called)]`
+
+To see method usage data goto `/deforest/files/dashboard`. By default data will be shown for models, however you can check data for your other directories using the "Show data for directory" dropdown in the header.
 
 ![Dashboard](https://user-images.githubusercontent.com/1737753/220743618-befdee12-c861-4733-abdd-7ab92143c39c.png)
 
@@ -33,15 +37,18 @@ There are a few settings you can tweak in `config/initializers/deforest.rb`.
 
 `write_logs_to_db_every`: Deforest will persist data from the log file to the DB every `write_logs_to_db_every`. Change this to `5.minutes` or `1.hour` or anything else, depending on your application workload.
 
-`current_admin_method_name`: `/deforest` urls are restricted only to logged in admins. You need to tell Deforest how to access the current logged in admin user object. By default, it's set to `current_admin`
+`You will want to restrict access to `/deforest` only to admins so I suggest you use something like the following (assuming you are using devise):`
+```
+authenticated :admin, -> user { user.kind_of? Admin } do
+  mount Deforest::Engine => '/deforest'
+end
+```
 
 `track_dirs`: add or remove directories you want deforest to track. default: `["/app/models", "/app/controllers", "/app/helpers"]`
 
-`render_source_on_browser`: (true|false) whether deforest should read your source files and render the usage data in browser. Deforest checks if admin is logged-in before rendering source code on the browser. However, if you are not comfortable with your source code being accessible from a browser, you can set this to false.
+`most_used_percentile_threshold` (only used while rendering data in `/deforest`): Percentile threshold to tell Deforest what methods should be considered most used.
 
-`most_used_percentile_threshold`: Percentile threshold to tell Deforest what methods should be considered most used.
-
-`least_used_percentile_threshold`: Percentile threshold to tell Deforest what methods should be considered least used.
+`least_used_percentile_threshold` (only used while rendering data in `/deforest`): Percentile threshold to tell Deforest what methods should be considered least used.
 
 ## Features in pipeline
 ~~VS Code extension so you can see the highlighted methods in your editor itself instead of reading code on the browser.~~ (DONE)
