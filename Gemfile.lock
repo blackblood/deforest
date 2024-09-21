@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    deforest (1.1.0)
+    deforest (1.1.1)
       activerecord (>= 4)
       activesupport (>= 4)
       jquery-rails
